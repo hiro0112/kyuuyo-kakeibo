@@ -16,7 +16,7 @@
 - フロントエンド: React + Vite（[src/](src/)）
 - バックエンド: Node.js + Express（[server/index.js](server/index.js)）。Claude API はここからだけ呼ぶ。ブラウザに API キーを渡さない
 - モデル: `claude-haiku-4-5`（Haiku の最新版を使う）
-- データ保存: ブラウザのローカルストレージのみ（[src/lib/store.js](src/lib/store.js)）。サーバーにも GitHub にも保存しない
+- データ保存: ブラウザ内のみ。表のデータはローカルストレージ（[src/lib/store.js](src/lib/store.js)）、貼り付けたPDF本体は IndexedDB（[src/lib/files.js](src/lib/files.js)）。サーバーにも GitHub にも保存しない
 - コードのコメントは日本語で書く
 
 ## コマンド

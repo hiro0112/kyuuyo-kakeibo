@@ -8,12 +8,15 @@ export const OTHER_ID = 'other';
 
 const DEFAULT_CATEGORY_NAMES = ['保険料', '交通費', 'サブスク', '食事代', '日常', 'EC', '娯楽'];
 
-const newId = () => crypto.randomUUID();
+export const newId = () => crypto.randomUUID();
 
 function initialState() {
   return {
     // incomes[年度][列キー] = { gross: 収入, deduction: 控除合計 }
     incomes: {},
+    // 貼り付けた給与明細ファイルと、そこから読み取った内容
+    // [{ id, fileName, cells: [{ fy, col, gross, deduction }] }]
+    incomeImports: [],
     // 支出明細。支出タブの表はこの配列をカテゴリ・月ごとに集計したもの
     transactions: [],
     categories: [
@@ -59,12 +62,33 @@ export function payslipsToCells(payslips) {
     }));
 }
 
-export function applyIncomeCells(state, cells) {
+// 読み取った給与明細を表に反映し、貼り付けたファイルとして記録する
+export function addIncomeImport(state, importId, fileName, cells) {
   const incomes = { ...state.incomes };
   for (const { fy, col, gross, deduction } of cells) {
     incomes[fy] = { ...incomes[fy], [col]: { gross, deduction } };
   }
-  return { ...state, incomes };
+  const incomeImports = [...state.incomeImports, { id: importId, fileName, cells }];
+  return { ...state, incomes, incomeImports };
+}
+
+// 貼り付けた給与明細ファイルを削除し、そのファイルから読み取った金額も表から消す
+export function removeIncomeImport(state, importId) {
+  const target = state.incomeImports.find((i) => i.id === importId);
+  if (!target) return state;
+  const incomeImports = state.incomeImports.filter((i) => i.id !== importId);
+  const incomes = { ...state.incomes };
+  for (const { fy, col } of target.cells) {
+    // 同じ月の明細が他のファイルにもあれば、そちらの金額に戻す
+    const other = incomeImports
+      .flatMap((i) => i.cells)
+      .findLast((c) => c.fy === fy && c.col === col);
+    const year = { ...incomes[fy] };
+    if (other) year[col] = { gross: other.gross, deduction: other.deduction };
+    else delete year[col];
+    incomes[fy] = year;
+  }
+  return { ...state, incomes, incomeImports };
 }
 
 // ---- カテゴリ分類 ----
@@ -105,9 +129,8 @@ export function addCategory(state, name) {
 // ---- 支出 ----
 
 // Claudeが読み取った支払明細を取り込む。戻り値は [新しいstate, 取り込んだ件数]
-export function addImportedTransactions(state, fileName, items) {
+export function addImportedTransactions(state, importId, fileName, items) {
   const categories = state.categories.map((c) => ({ ...c, keywords: [...c.keywords] }));
-  const importId = newId();
   const added = [];
 
   for (const item of items) {

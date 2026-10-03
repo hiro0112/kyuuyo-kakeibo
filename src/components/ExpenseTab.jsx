@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { COLUMNS, yen } from '../lib/fiscal.js';
 import { parseExpensePdf } from '../lib/api.js';
-import { addCategory, addImportedTransactions, expenseTotals, removeImport, setExpenseCell } from '../lib/store.js';
+import { saveFile } from '../lib/files.js';
+import { addCategory, addImportedTransactions, expenseTotals, newId, removeImport, setExpenseCell } from '../lib/store.js';
+import ImportedFiles from './ImportedFiles.jsx';
 import NumberCell from './NumberCell.jsx';
 import PdfUploader from './PdfUploader.jsx';
 
@@ -14,27 +16,59 @@ export default function ExpenseTab({ state, setState, fy, setFy }) {
   const colTotal = (col) => state.categories.reduce((sum, cat) => sum + cell(cat.id, col), 0);
   const grandTotal = COLUMNS.reduce((sum, c) => sum + colTotal(c.key), 0);
 
-  // 取り込み済みのPDF一覧（重複取り込みの確認と取り消し用）
+  // 貼り付けたファイルごとの明細（重複取り込みの確認と、下部の一覧表示用）
   const imports = useMemo(() => {
     const map = new Map();
     for (const tx of state.transactions) {
       if (!tx.importId) continue;
-      const entry = map.get(tx.importId) ?? { id: tx.importId, fileName: tx.sourceFile, count: 0, amount: 0 };
-      entry.count += 1;
+      const entry = map.get(tx.importId) ?? { id: tx.importId, fileName: tx.sourceFile, items: [], amount: 0 };
+      entry.items.push(tx);
       entry.amount += tx.amount;
       map.set(tx.importId, entry);
     }
     return [...map.values()];
   }, [state.transactions]);
 
+  const categoryName = (id) => state.categories.find((c) => c.id === id)?.name ?? '';
+  const files = imports.map((i) => ({
+    id: i.id,
+    fileName: i.fileName,
+    summary: `${i.items.length}件／${yen(i.amount)}円`,
+    content: (
+      <table className="file-table">
+        <thead>
+          <tr>
+            <th>利用日</th>
+            <th>支払い名目</th>
+            <th>カテゴリ</th>
+            <th>金額</th>
+          </tr>
+        </thead>
+        <tbody>
+          {i.items.map((tx) => (
+            <tr key={tx.id}>
+              <td>{tx.date}</td>
+              <td>{tx.description}</td>
+              <td>{categoryName(tx.categoryId)}</td>
+              <td className="num">{yen(tx.amount)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ),
+  }));
+
   async function importPdf(file) {
     if (imports.some((i) => i.fileName === file.name) && !confirm(`${file.name} は取り込み済みです。もう一度取り込みますか？`)) {
       throw new Error('取り込みを中止しました。');
     }
     const { transactions } = await parseExpensePdf(file, state.categories);
-    const [, count] = addImportedTransactions(state, file.name, transactions);
+    const importId = newId();
+    const [, count] = addImportedTransactions(state, importId, file.name, transactions);
     if (count === 0) throw new Error('支払明細を読み取れませんでした。');
-    setState((s) => addImportedTransactions(s, file.name, transactions)[0]);
+    // PDF本体はブラウザ内に保存する。保存に失敗しても読み取り結果は反映する
+    await saveFile(importId, file).catch(() => {});
+    setState((s) => addImportedTransactions(s, importId, file.name, transactions)[0]);
     // 最も明細が多い年度を表示する
     const years = {};
     for (const t of transactions) {
@@ -111,31 +145,7 @@ export default function ExpenseTab({ state, setState, fy, setFy }) {
         セルは直接入力して修正できます。修正した差額は「手動入力」として支出詳細タブに表示されます。
       </p>
 
-      {imports.length > 0 && (
-        <section>
-          <h2>取り込み済みのPDF</h2>
-          <ul className="import-list">
-            {imports.map((i) => (
-              <li key={i.id}>
-                <span>
-                  {i.fileName}（{i.count}件／{yen(i.amount)}円）
-                </span>
-                <button
-                  type="button"
-                  className="danger"
-                  onClick={() => {
-                    if (confirm(`${i.fileName} から取り込んだ明細 ${i.count}件を削除しますか？`)) {
-                      setState((s) => removeImport(s, i.id));
-                    }
-                  }}
-                >
-                  削除
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <ImportedFiles items={files} onDelete={(id) => setState((s) => removeImport(s, id))} />
     </>
   );
 }
