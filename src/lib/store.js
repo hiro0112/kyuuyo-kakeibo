@@ -27,6 +27,12 @@ function initialState() {
 }
 
 export function loadState() {
+  // 以前の版がブラウザ内に保存していたPDF本体は不要になったので消す
+  try {
+    indexedDB.deleteDatabase('kyuyo-kakeibo-files');
+  } catch {
+    // 消せなくても動作に影響はない
+  }
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && Array.isArray(saved.categories) && Array.isArray(saved.transactions)) {

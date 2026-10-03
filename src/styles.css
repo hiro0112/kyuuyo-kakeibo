@@ -274,69 +274,47 @@ table.detail tbody th {
 }
 
 /* 貼り付けたファイル（折り畳み） */
-.file-item {
+.file-list {
+  margin-top: 24px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  margin-bottom: 8px;
 }
 
-.file-item summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.file-list summary {
   padding: 8px 12px;
   cursor: pointer;
-  list-style: none;
+  font-weight: 600;
 }
 
-.file-item summary::-webkit-details-marker {
-  display: none;
-}
-
-.file-item summary::before {
-  content: '▶';
-  font-size: 10px;
-  color: var(--muted);
-}
-
-.file-item[open] summary::before {
-  content: '▼';
-}
-
-.file-item[open] summary {
+.file-list[open] summary {
   border-bottom: 1px solid var(--border);
   background: var(--head);
 }
 
-.file-name {
-  font-weight: 600;
+.file-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px;
 }
 
-.file-item summary button {
+.file-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.file-list li:last-child {
+  border-bottom: none;
+}
+
+.file-list li button {
   margin-left: auto;
 }
 
-.file-body {
-  padding: 12px;
-  display: grid;
-  gap: 12px;
-}
-
-.file-table {
-  width: auto;
-  white-space: normal;
-  border: 1px solid var(--border);
-}
-
-.file-table th {
-  position: static;
-}
-
-.pdf-preview {
-  width: 100%;
-  height: 600px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+.file-list .hint {
+  margin: 8px 12px;
 }
 
 /* カテゴリ */

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { COLUMNS, yen } from '../lib/fiscal.js';
 import { parseExpensePdf } from '../lib/api.js';
-import { saveFile } from '../lib/files.js';
 import { addCategory, addImportedTransactions, expenseTotals, newId, removeImport, setExpenseCell } from '../lib/store.js';
 import ImportedFiles from './ImportedFiles.jsx';
 import NumberCell from './NumberCell.jsx';
@@ -16,46 +15,23 @@ export default function ExpenseTab({ state, setState, fy, setFy }) {
   const colTotal = (col) => state.categories.reduce((sum, cat) => sum + cell(cat.id, col), 0);
   const grandTotal = COLUMNS.reduce((sum, c) => sum + colTotal(c.key), 0);
 
-  // 貼り付けたファイルごとの明細（重複取り込みの確認と、下部の一覧表示用）
+  // 貼り付けたファイルの一覧（重複取り込みの確認と、下部の一覧表示用）
   const imports = useMemo(() => {
     const map = new Map();
     for (const tx of state.transactions) {
       if (!tx.importId) continue;
-      const entry = map.get(tx.importId) ?? { id: tx.importId, fileName: tx.sourceFile, items: [], amount: 0 };
-      entry.items.push(tx);
+      const entry = map.get(tx.importId) ?? { id: tx.importId, fileName: tx.sourceFile, count: 0, amount: 0 };
+      entry.count += 1;
       entry.amount += tx.amount;
       map.set(tx.importId, entry);
     }
     return [...map.values()];
   }, [state.transactions]);
 
-  const categoryName = (id) => state.categories.find((c) => c.id === id)?.name ?? '';
   const files = imports.map((i) => ({
     id: i.id,
     fileName: i.fileName,
-    summary: `${i.items.length}件／${yen(i.amount)}円`,
-    content: (
-      <table className="file-table">
-        <thead>
-          <tr>
-            <th>利用日</th>
-            <th>支払い名目</th>
-            <th>カテゴリ</th>
-            <th>金額</th>
-          </tr>
-        </thead>
-        <tbody>
-          {i.items.map((tx) => (
-            <tr key={tx.id}>
-              <td>{tx.date}</td>
-              <td>{tx.description}</td>
-              <td>{categoryName(tx.categoryId)}</td>
-              <td className="num">{yen(tx.amount)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ),
+    summary: `${i.count}件／${yen(i.amount)}円`,
   }));
 
   async function importPdf(file) {
@@ -66,8 +42,6 @@ export default function ExpenseTab({ state, setState, fy, setFy }) {
     const importId = newId();
     const [, count] = addImportedTransactions(state, importId, file.name, transactions);
     if (count === 0) throw new Error('支払明細を読み取れませんでした。');
-    // PDF本体はブラウザ内に保存する。保存に失敗しても読み取り結果は反映する
-    await saveFile(importId, file).catch(() => {});
     setState((s) => addImportedTransactions(s, importId, file.name, transactions)[0]);
     // 最も明細が多い年度を表示する
     const years = {};

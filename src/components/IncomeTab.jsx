@@ -1,6 +1,5 @@
 import { COLUMNS, columnLabel, yen } from '../lib/fiscal.js';
 import { parseIncomePdf } from '../lib/api.js';
-import { saveFile } from '../lib/files.js';
 import { addIncomeImport, newId, payslipsToCells, removeIncomeImport, setIncomeCell } from '../lib/store.js';
 import ImportedFiles from './ImportedFiles.jsx';
 import NumberCell from './NumberCell.jsx';
@@ -17,8 +16,6 @@ export default function IncomeTab({ state, setState, fy, setFy }) {
     const cells = payslipsToCells(payslips);
     if (cells.length === 0) throw new Error('給与明細を読み取れませんでした。');
     const importId = newId();
-    // PDF本体はブラウザ内に保存する。保存に失敗しても読み取り結果は反映する
-    await saveFile(importId, file).catch(() => {});
     setState((s) => addIncomeImport(s, importId, file.name, cells));
     // 読み取った明細の年度を表示する
     setFy(cells[cells.length - 1].fy);
@@ -32,35 +29,11 @@ export default function IncomeTab({ state, setState, fy, setFy }) {
     { field: 'deduction', label: '控除合計' },
   ];
 
-  // 貼り付けたファイルごとの読み取り内容
+  // 貼り付けたファイルの一覧（どの月の明細かを添える）
   const files = state.incomeImports.map((i) => ({
     id: i.id,
     fileName: i.fileName,
     summary: i.cells.map((c) => `${c.fy}年度 ${columnLabel(c.col)}`).join('、'),
-    content: (
-      <table className="file-table">
-        <thead>
-          <tr>
-            <th>対象</th>
-            <th>収入</th>
-            <th>控除合計</th>
-            <th>手取り金額</th>
-          </tr>
-        </thead>
-        <tbody>
-          {i.cells.map((c) => (
-            <tr key={`${c.fy}-${c.col}`}>
-              <td>
-                {c.fy}年度 {columnLabel(c.col)}
-              </td>
-              <td className="num">{yen(c.gross)}</td>
-              <td className="num">{yen(c.deduction)}</td>
-              <td className="num">{yen(c.gross - c.deduction)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ),
   }));
 
   return (
