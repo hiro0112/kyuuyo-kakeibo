@@ -7,7 +7,11 @@ import Anthropic from '@anthropic-ai/sdk';
 const MODEL = 'claude-haiku-4-5';
 const PORT = process.env.PORT || 3001;
 
-const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+// ワークスペースに紐づいていないキーの場合は、利用するワークスペースIDをヘッダーで指定する
+const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID?.trim();
+const client = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic(workspaceId ? { defaultHeaders: { 'anthropic-workspace-id': workspaceId } } : {})
+  : null;
 
 const app = express();
 app.use(express.json({ limit: '45mb' }));
