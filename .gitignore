@@ -1,0 +1,14 @@
+# 依存パッケージ・ビルド成果物
+node_modules/
+dist/
+
+# APIキーなどの認証情報
+.env
+.env.*
+!.env.example
+
+# 給与明細・支払明細などの個人データ（絶対にコミットしない）
+*.pdf
+*.csv
+*.xlsx
+*.xls

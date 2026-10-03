@@ -9,7 +9,30 @@
 - リポジトリ: https://github.com/hiro0112/kyuuyo-kakeibo.git
 - デフォルトブランチ: `main`
 
-現時点ではソースコードは未作成。技術スタック、ディレクトリ構成、ビルド・テスト・起動コマンドが決まったら、このファイルに追記すること。
+給与明細PDF（収入）とカード支払明細PDF（支出）を Claude API で読み取り、年度（4月〜翌3月）ごとの表で収支を見える化するアプリ。
+
+## 技術構成
+
+- フロントエンド: React + Vite（[src/](src/)）
+- バックエンド: Node.js + Express（[server/index.js](server/index.js)）。Claude API はここからだけ呼ぶ。ブラウザに API キーを渡さない
+- モデル: `claude-haiku-4-5`（Haiku の最新版を使う）
+- データ保存: ブラウザのローカルストレージのみ（[src/lib/store.js](src/lib/store.js)）。サーバーにも GitHub にも保存しない
+- コードのコメントは日本語で書く
+
+## コマンド
+
+- `npm install` — 依存パッケージのインストール
+- `npm run dev` — バックエンド（127.0.0.1:3001）とフロントエンド（Vite）を同時に起動
+- `npm run build` — フロントエンドのビルド確認
+
+起動前に `.env.example` を `.env` にコピーし、`ANTHROPIC_API_KEY` を設定する。
+
+## 設計上の決まりごと
+
+- 表の列は [src/lib/fiscal.js](src/lib/fiscal.js) の `COLUMNS`（4月〜3月＋夏・冬ボーナス）を全タブで共有する。
+- 支出の元データは `transactions`（明細1行ずつ）だけ。支出タブ・収入−支出タブ・支出詳細タブはすべてこれを集計して表示する。
+- 支出タブでセルを手動修正したときは、PDF由来の明細は変えず、差額を `manual: true` の明細として持つ。
+- カテゴリ分類は、カテゴリタブのキーワード（ルール）への一致を Claude の分類より優先する。カテゴリを変更したら `updateCategories` で既存の明細を分類し直す。
 
 ## Git運用ルール
 

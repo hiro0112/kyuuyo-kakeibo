@@ -1,0 +1,343 @@
+:root {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --border: #d9dde3;
+  --text: #1f2933;
+  --muted: #6b7785;
+  --accent: #2563eb;
+  --accent-soft: #e8effd;
+  --danger: #c0392b;
+  --head: #eef1f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  font-size: 14px;
+}
+
+.app {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+h2 {
+  margin: 24px 0 8px;
+  font-size: 15px;
+}
+
+button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+input {
+  font: inherit;
+  color: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.fy-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+/* タブ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 16px 0 0;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+
+.tabs button {
+  border: none;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  padding: 10px 16px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+main {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 16px;
+}
+
+/* PDF貼り付け欄 */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone.dragging {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dropzone.busy {
+  cursor: progress;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.upload-logs {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.upload-logs .ok {
+  color: #1b7a3d;
+}
+
+.upload-logs .ng {
+  color: var(--danger);
+}
+
+/* 表 */
+.table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  white-space: nowrap;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  padding: 6px 8px;
+}
+
+tr > :last-child {
+  border-right: none;
+}
+
+thead th {
+  background: var(--head);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* 項目名の列は横スクロールしても固定する */
+tbody th,
+tfoot th,
+thead th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--head);
+  text-align: left;
+  z-index: 1;
+}
+
+td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+td.total,
+tfoot td,
+tr.emphasis td {
+  font-weight: 600;
+  background: #fafbfc;
+}
+
+td.negative {
+  color: var(--danger);
+}
+
+.number-cell {
+  width: 100%;
+  min-width: 84px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 6px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+}
+
+.number-cell:hover {
+  border-color: var(--border);
+}
+
+.number-cell:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+}
+
+/* 支出詳細 */
+table.detail {
+  white-space: normal;
+}
+
+table.detail tbody th {
+  position: static;
+}
+
+.group-row th,
+.group-row td {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.inline-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.inline-form label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.period-total {
+  margin-left: auto;
+}
+
+.import-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.import-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* カテゴリ */
+.category-list {
+  display: grid;
+  gap: 12px;
+}
+
+.category-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.category-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.category-name {
+  font-weight: 600;
+  width: 220px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+
+.chip button {
+  border: none;
+  background: transparent;
+  padding: 0 6px;
+  color: var(--muted);
+}
+
+.chip-input {
+  width: 180px;
+  font-size: 13px;
+  padding: 4px 8px;
+}
