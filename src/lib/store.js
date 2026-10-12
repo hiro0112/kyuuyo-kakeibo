@@ -34,14 +34,21 @@ export function loadState() {
     // 消せなくても動作に影響はない
   }
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && Array.isArray(saved.categories) && Array.isArray(saved.transactions)) {
-      return { ...initialState(), ...saved };
-    }
+    const saved = parseState(localStorage.getItem(STORAGE_KEY));
+    if (saved) return saved;
   } catch {
     // 壊れたデータは無視して初期状態から始める
   }
   return initialState();
+}
+
+// 保存データ（JSON文字列）をアプリのデータに戻す。形式が違えば null
+export function parseState(json) {
+  const saved = JSON.parse(json);
+  if (saved && Array.isArray(saved.categories) && Array.isArray(saved.transactions)) {
+    return { ...initialState(), ...saved };
+  }
+  return null;
 }
 
 export function saveState(state) {

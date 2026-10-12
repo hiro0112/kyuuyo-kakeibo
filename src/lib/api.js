@@ -10,17 +10,23 @@ function fileToBase64(file) {
   });
 }
 
+// 開発中（npm run dev）は Vite が /api をサーバーに転送する。
+// GitHub Pages で公開した画面からは、このPCで動かしているサーバーを直接呼ぶ
+const API_BASE = import.meta.env.VITE_API_BASE ?? (import.meta.env.DEV ? '' : 'http://127.0.0.1:3001');
+
 async function postPdf(path, file, extra = {}) {
   const data = await fileToBase64(file);
   let response;
   try {
-    response = await fetch(path, {
+    response = await fetch(API_BASE + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data, ...extra }),
     });
   } catch {
-    throw new Error('サーバーに接続できません。npm run dev でサーバーが起動しているか確認してください。');
+    throw new Error(
+      'このPCの読み取りサーバーに接続できません。プロジェクトのフォルダで npm run server（または npm run dev）を実行してから、もう一度お試しください。',
+    );
   }
   const body = await response.json().catch(() => null);
   if (!response.ok) {

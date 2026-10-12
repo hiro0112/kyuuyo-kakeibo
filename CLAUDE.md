@@ -27,6 +27,14 @@
 
 起動前に `.env.example` を `.env` にコピーし、`ANTHROPIC_API_KEY` を設定する。
 
+## 公開（GitHub Pages）
+
+- 公開URL: https://hiro0112.github.io/kyuuyo-kakeibo/
+- `main` に push すると、[.github/workflows/deploy.yml](.github/workflows/deploy.yml) が画面をビルドして `gh-pages` ブランチへ公開する。
+- 公開されるのは画面だけ。PDFの読み取りは、公開画面から利用者のPCで動くサーバー（`npm run server`、`http://127.0.0.1:3001`）を呼ぶ。APIキーはPCの `.env` に置いたままにする。
+- サーバーは、許可したサイト（`ALLOWED_ORIGINS`、既定は `https://hiro0112.github.io`）と localhost 以外からの呼び出しを拒否する。
+- データはURLごとに別のローカルストレージに入る。localhost と公開URLの間は、画面右上の「データを書き出す／読み込む」で移す。
+
 ## 設計上の決まりごと
 
 - 表の列は [src/lib/fiscal.js](src/lib/fiscal.js) の `COLUMNS`（4月〜3月＋夏・冬ボーナス）を全タブで共有する。

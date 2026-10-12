@@ -56,8 +56,25 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:hover,
+label.button:hover {
   border-color: var(--accent);
+}
+
+/* ファイル選択を普通のボタンと同じ見た目にする */
+label.button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.data-buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 13px;
 }
 
 button.danger {

@@ -14,6 +14,39 @@ const client = process.env.ANTHROPIC_API_KEY
   : null;
 
 const app = express();
+
+// GitHub Pages で公開した画面から、このPC上のサーバーを呼べるようにする。
+// 許可したサイト以外のページからは、APIキーを使った読み取りをさせない
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? 'https://hiro0112.github.io')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const isLocalOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    if (!ALLOWED_ORIGINS.includes(origin) && !isLocalOrigin(origin)) {
+      res.status(403).json({ error: 'このサイトからの利用は許可されていません。' });
+      return;
+    }
+    res.set({
+      'Access-Control-Allow-Origin': origin,
+      Vary: 'Origin',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      // 公開サイトからPC内（ローカル）への接続をブラウザに許可してもらうためのヘッダー
+      'Access-Control-Allow-Private-Network': 'true',
+      'Access-Control-Max-Age': '600',
+    });
+  }
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 app.use(express.json({ limit: '45mb' }));
 
 // ブラウザに返すエラー（ステータスコード付き）
